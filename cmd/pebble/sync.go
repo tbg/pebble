@@ -60,7 +60,7 @@ func runSync(cmd *cobra.Command, args []string) {
 								log.Fatal(err)
 							}
 						}
-						if err := b.Commit(db.Sync); err != nil {
+						if err := b.Commit(db.NoSync); err != nil {
 							log.Fatal(err)
 						}
 						latency.Record(time.Since(start))
