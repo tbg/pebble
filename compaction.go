@@ -8,9 +8,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 	"unsafe"
 
 	"github.com/petermattis/pebble/db"
@@ -299,7 +301,7 @@ func (c *compaction) String() string {
 	for i := range c.inputs {
 		fmt.Fprintf(&buf, "%d:", i+c.level)
 		for _, f := range c.inputs[i] {
-			fmt.Fprintf(&buf, " %d:%s-%s", f.fileNum, f.smallest, f.largest)
+			fmt.Fprintf(&buf, " %d:%q-%q", f.fileNum, f.smallest, f.largest)
 		}
 		fmt.Fprintf(&buf, "\n")
 	}
@@ -643,6 +645,11 @@ func (d *DB) compact1() (err error) {
 	if c == nil {
 		return nil
 	}
+	tBegin := time.Now()
+	defer func() {
+		elapsed := time.Since(tBegin)
+		log.Printf("compaction %s took %.2fs", c, elapsed.Seconds())
+	}()
 
 	jobID := d.mu.nextJobID
 	d.mu.nextJobID++
